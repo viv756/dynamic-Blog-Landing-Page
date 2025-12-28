@@ -172,7 +172,7 @@ The application code itself was already optimized.
 
 ✅ Solutions Implemented
 
-1️⃣ Enable Next.js Link Prefetching (Most Impact)
+**1️⃣ Enable Next.js Link Prefetching (Most Impact)**
 
 Next.js can preload pages before the user clicks.
 
