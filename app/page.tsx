@@ -6,6 +6,16 @@ type WPPage = {
   slug: string;
 };
 
+/**
+ * Fetches all WordPress pages from the API.
+ *
+ * Uses Incremental Static Regeneration (ISR) with `revalidate: 60` seconds
+ * so the list is updated at most once per minute.
+ *
+ * @returns Promise resolving to an array of WPPage objects
+ * @throws Error if the API request fails
+ */
+
 async function getPages(): Promise<WPPage[]> {
   const res = await fetch(
     "https://campusify.io/wp-json/wp/v2/pages",
@@ -18,6 +28,15 @@ async function getPages(): Promise<WPPage[]> {
 
   return res.json();
 }
+
+/**
+ * PagesList component
+ *
+ * Fetches all WordPress pages and renders them as a list of links.
+ * Each link navigates to the page's dynamic route using its slug.
+ *
+ * Uses Next.js <Link> with `prefetch` enabled for faster navigation.
+ */
 
 export default async function PagesList() {
   const pages = await getPages();

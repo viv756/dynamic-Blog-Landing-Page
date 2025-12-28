@@ -10,8 +10,20 @@ type Props = {
   };
 };
 
+/**
+ * Generates dynamic SEO metadata for the page.
+ *
+ * Fetches the WordPress page using the slug.
+ * Uses Yoast SEO data if available, otherwise falls back to default title/description.
+ *
+ * @param params - Contains the dynamic slug
+ * @returns Metadata object for Next.js head
+ */
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const page = await fetchPageBySlug(params.slug);
+
+  // Fallback metadata if page or Yoast SEO data is unavailable
   if (!page || !page.yoast_head_json) {
     return {
       title: "Campusify",
@@ -45,6 +57,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+/**
+ * Generates static paths for all WordPress pages.
+ *
+ * Used by Next.js for pre-rendering pages at build time (SSG).
+ *
+ * @returns Array of objects with `slug` for each page
+ */
+
 export async function generateStaticParams() {
   const res = await fetch("https://campusify.io/wp-json/wp/v2/pages");
   const pages = await res.json();
@@ -54,11 +74,20 @@ export async function generateStaticParams() {
   }));
 }
 
+/**
+ * Dynamic Page component for rendering a WordPress page.
+ *
+ * Fetches page content based on slug, cleans the HTML, and renders it.
+ *
+ * @param params - Contains the dynamic slug
+ * @returns JSX element with cleaned page content
+ */
 
 export default async function Page({ params }: Props) {
   const { slug } = await params;
   const page = await fetchPageBySlug(slug);
 
+  // Clean HTML content to remove unwanted CSS, inline styles, and add lazy loading to images
   const cleanContent = cleanHTML(page.content.rendered);
 
   return (
