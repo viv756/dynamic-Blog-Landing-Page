@@ -30,8 +30,12 @@ const blogProse = `
     prose-img:rounded-xl
     prose-img:shadow-md
     prose-img:mx-auto
-  
+    prose-img:sm:h-150
+    prose-img:sm:w-150
+
     prose-img:my-10
+  
+  
 `;
 
 export default function BlogContent({ content }: { content: string }) {

@@ -1,9 +1,11 @@
 import DOMPurify from "isomorphic-dompurify";
 
 export function cleanHTML(html: string) {
+  // Remove <style> tags
   const noStyleTags = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
 
-  return DOMPurify.sanitize(noStyleTags, {
+  // Sanitize HTML
+  const sanitized = DOMPurify.sanitize(noStyleTags, {
     ALLOWED_TAGS: [
       "h1",
       "h2",
@@ -25,4 +27,9 @@ export function cleanHTML(html: string) {
     ALLOWED_ATTR: ["href", "src", "alt", "title"],
     FORBID_ATTR: ["style", "class"],
   });
+
+  // Add loading="lazy" to all images
+  const lazyImages = sanitized.replace(/<img /g, '<img loading="lazy" ');
+
+  return lazyImages;
 }
