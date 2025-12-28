@@ -45,6 +45,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+export async function generateStaticParams() {
+  const res = await fetch("https://campusify.io/wp-json/wp/v2/pages");
+  const pages = await res.json();
+
+  return pages.map((page: any) => ({
+    slug: page.slug,
+  }));
+}
+
+
 export default async function Page({ params }: Props) {
   const { slug } = await params;
   const page = await fetchPageBySlug(slug);

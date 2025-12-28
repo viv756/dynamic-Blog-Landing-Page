@@ -28,7 +28,7 @@ export default async function PagesList() {
       <ul className="space-y-3">
         {pages.map((page) => (
           <li key={page.id}>
-            <Link href={`${page.slug}`} className="text-blue-600 hover:underline">
+            <Link href={`${page.slug}`} className="text-blue-600 hover:underline" prefetch>
               {page.title.rendered}
             </Link>
           </li>
