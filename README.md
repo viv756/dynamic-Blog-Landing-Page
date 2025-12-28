@@ -84,7 +84,7 @@ Start the server
   yarn dev
 ```
 
-Open http://localhost:3000/xpress to see the blog pages.
+Open http://localhost:3000 to see the blog pages.
 
 
 ## CSS & Junk Content Removal Logic
