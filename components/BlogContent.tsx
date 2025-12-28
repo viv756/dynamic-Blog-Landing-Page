@@ -33,6 +33,7 @@ const blogProse = `
   
     prose-img:my-10
 `;
+
 export default function BlogContent({ content }: { content: string }) {
   return <article className={blogProse} dangerouslySetInnerHTML={{ __html: content }} />;
 }
