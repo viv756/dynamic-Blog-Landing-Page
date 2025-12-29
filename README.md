@@ -87,26 +87,85 @@ Start the server
 Open http://localhost:3000 to see the blog pages.
 
 
+
 ## CSS & Junk Content Removal Logic
 
-To keep the solution lightweight and performant, a regex-based cleaning approach was implemented to:
-- Remove `<style>` tags
-- Remove inline `style` and `class` attributes
-- Preserve semantic HTML structure
-- Add `loading="lazy"` and `decoding="async"` to images for performance
+To keep the solution secure, lightweight, and performant, the WordPress HTML content is sanitized using the sanitize-html
+ library. This ensures that only meaningful HTML is preserved while removing unwanted styling and attributes.
 
-This approach is safe for this project due to the controlled CMS source and improves server-side rendering performance.
+### What it does
+
+- Remove <style> tags completely to avoid unwanted CSS.
+
+- Strip inline style and class attributes from all elements.
+
+- Preserve semantic HTML elements like headings, paragraphs, lists, links, images, blockquotes, and line breaks.
+
+- Optimize images by adding loading="lazy" and decoding="async" for better page speed.
+
+- Secure links by adding rel="noopener noreferrer" and target="_blank" for external links.
+
+- This approach is safe for this project due to the controlled CMS source and improves server-side rendering performance.
+
+#### Implementation (Using sanitize-html)
 
 ```
-export function cleanHTML(html: string) {
-  let cleaned = html.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "");
-  cleaned = cleaned.replace(/ style="[^"]*"/gi, "");
-  cleaned = cleaned.replace(/ class="[^"]*"/gi, "");
-  cleaned = cleaned.replace(/<img /g, '<img loading="lazy" decoding="async" ');
-  return cleaned;
+import sanitizeHtml from "sanitize-html";
+
+export function cleanHTML(html: string): string {
+  return sanitizeHtml(html, {
+    allowedTags: [
+      "h1","h2","h3","h4","h5","h6",
+      "p","ul","ol","li",
+      "strong","em",
+      "a","img","blockquote","br",
+    ],
+
+    allowedAttributes: {
+      a: ["href", "title"],
+      img: ["src", "alt", "title", "loading", "decoding", "width", "height"],
+    },
+
+    disallowedTagsMode: "discard",
+
+    transformTags: {
+      img: (tagName, attribs) => ({
+        tagName: "img",
+        attribs: { ...attribs, loading: "lazy", decoding: "async" },
+      }),
+      a: (tagName, attribs) => ({
+        tagName: "a",
+        attribs: { ...attribs, rel: "noopener noreferrer", target: "_blank" },
+      }),
+    },
+
+    exclusiveFilter(frame) {
+      // Remove <style> tags completely
+      if (frame.tag === "style") return true;
+
+      // Strip unwanted attributes
+      if (frame.attribs) {
+        delete frame.attribs.style;
+        delete frame.attribs.class;
+      }
+
+      return false;
+    },
+  });
 }
 
 ```
+
+### Why sanitize-html is Used
+
+- Security: Prevents unsafe or malicious HTML from being rendered.
+
+- Performance: Faster and more reliable than regex for complex HTML content.
+
+- SEO & Accessibility: Preserves semantic elements and optimizes images and links.
+
+- SSR-Friendly: Works well with server-side rendering and static generation.
+---
 
 
 ## Performance Optimizations
