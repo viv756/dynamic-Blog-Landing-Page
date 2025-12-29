@@ -109,10 +109,10 @@ To keep the solution secure, lightweight, and performant, the WordPress HTML con
 
 ### Empty Content Handling
 
-WordPress content often includes empty HTML elements (`<p>`, `<a>`, `<h*>`)
+- WordPress content often includes empty HTML elements (`<p>`, `<a>`, `<h*>`)
 after removing inline styles and CSS.
 
-To prevent excessive whitespace and layout gaps, a custom `exclusiveFilter`
+- To prevent excessive whitespace and layout gaps, a custom `exclusiveFilter`
 is used during sanitization to remove empty elements while preserving
 meaningful content such as images and text.
 
