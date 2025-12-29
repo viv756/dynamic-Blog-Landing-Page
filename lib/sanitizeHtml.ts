@@ -1,58 +1,37 @@
 import sanitizeHtml from "sanitize-html";
 
 /**
- * cleanHTML
+ * Cleans and sanitizes HTML content coming from a controlled CMS source.
  *
- * Cleans and sanitizes raw HTML content fetched from WordPress.
- *
- * Steps performed:
- * 1. Preserves only essential HTML tags for content (headings, paragraphs, lists, formatting, links, images, blockquotes, line breaks).
- * 2. Preserves only essential attributes:
- *    - Links: href, title
- *    - Images: src, alt, title, loading, decoding
- * 3. Removes all other tags completely (disallowedTagsMode: 'discard').
- * 4. Transforms <img> tags to add:
- *    - loading="lazy" (for lazy loading)
- *    - decoding="async" (to optimize image decoding)
- * 5. Transforms <a> tags to add:
- *    - rel="noopener noreferrer"
- *    - target="_blank" (open links safely in a new tab)
- * 6. Filters out <style> tags and removes all inline style and class attributes.
- *
- * @param html - Raw HTML content from WordPress
- * @returns Sanitized HTML string ready for safe rendering
+ * Goals:
+ * - Remove unsafe or unnecessary HTML (e.g., <style> tags)
+ * - Strip inline styles and classes
+ * - Remove empty elements that cause unwanted spacing
+ * - Preserve semantic structure
+ * - Improve performance by lazy-loading images
  */
-
 export function cleanHTML(html: string): string {
   return sanitizeHtml(html, {
+    // Allow only semantic and content-related HTML tags
     allowedTags: [
-      "h1",
-      "h2",
-      "h3",
-      "h4",
-      "h5",
-      "h6",
-      "p",
-      "ul",
-      "ol",
-      "li",
-      "strong",
-      "em",
-      "a",
-      "img",
-      "blockquote",
-      "br",
+      "h1", "h2", "h3", "h4", "h5", "h6",
+      "p", "ul", "ol", "li",
+      "strong", "em",
+      "a", "img", "blockquote", "br",
     ],
 
+    // Restrict allowed attributes to safe, required ones
     allowedAttributes: {
-      a: ["href", "title"], // Preserve link attributes
-      img: ["src", "alt", "title", "loading", "decoding"], // Preserve image attributes
+      a: ["href", "title", "target", "rel"],
+      img: ["src", "alt", "title", "loading", "decoding"],
     },
 
-    disallowedTagsMode: "discard", // Remove all other tags
+    // Completely discard disallowed tags instead of escaping them
+    disallowedTagsMode: "discard",
 
+    // Modify specific tags to enforce best practices
     transformTags: {
-      // Optimize images
+      // Add performance-related attributes to images
       img: (tagName, attribs) => ({
         tagName: "img",
         attribs: {
@@ -61,28 +40,38 @@ export function cleanHTML(html: string): string {
           decoding: "async",
         },
       }),
-      // Make links safe
+
+      // Ensure links open safely in a new tab
       a: (tagName, attribs) => ({
         tagName: "a",
         attribs: {
           ...attribs,
-          rel: "noopener noreferrer",
           target: "_blank",
+          rel: "noopener noreferrer",
         },
       }),
     },
 
+    // Custom filter to remove unwanted or empty nodes
     exclusiveFilter(frame) {
-      // Remove <style> tags completely
+      // Remove <style> tags entirely
       if (frame.tag === "style") return true;
 
-      // Strip style and class attributes from all elements
+      // Remove empty elements (prevents excessive vertical spacing)
+      const text = frame.text?.trim();
+      const hasImage = frame.tag === "img";
+
+      if (!hasImage && !text) {
+        return true;
+      }
+
+      // Strip inline styles and class attributes
       if (frame.attribs) {
         delete frame.attribs.style;
         delete frame.attribs.class;
       }
 
-      return false; // Keep the element if not filtered
+      return false;
     },
   });
 }
